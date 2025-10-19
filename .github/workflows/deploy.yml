@@ -81,70 +81,69 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             echo "=== Checking /tmp directory ==="
-OBOBOB            ls -la /tmp/
+            ls -la /tmp/
             
-OB            echo "=== Verifying ROOT.war file ==="
+            echo "=== Verifying ROOT.war file ==="
             if [ -f "/tmp/ROOT.war" ]; then
               echo "Found ROOT.war file in /tmp:"
               ls -la /tmp/ROOT.war
-OB              file /tmp/ROOT.war
+              file /tmp/ROOT.war
               
               # Verify it's a regular file
-OB              if [ ! -f "/tmp/ROOT.war" ]; then
+              if [ ! -f "/tmp/ROOT.war" ]; then
                 echo "ERROR: /tmp/ROOT.war is not a regular file!"
                 exit 1
               fi
             else
-OB              echo "ERROR: /tmp/ROOT.war not found!"
+              echo "ERROR: /tmp/ROOT.war not found!"
               echo "Contents of /tmp:"
-OB              ls -la /tmp/
+              ls -la /tmp/
               exit 1
-OB            fi
+            fi
 
 OB      # 8 Deploy WAR on Tomcat
       - name: Deploy WAR on Tomcat
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
+OBOBOB        uses: appleboy/ssh-action@master
+OB        with:
+OBOB          host: ${{ secrets.EC2_HOST }}
+OB          username: ubuntu
+OB          key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            echo "=== Starting Deployment ==="
-            
+OBOBOBOB            echo "=== Starting Deployment ==="
+OB            
             echo "1. Cleaning up old deployment..."
-            sudo rm -rf /var/lib/tomcat10/webapps/ROOT*
-            
+OBOB            sudo rm -rf /var/lib/tomcat10/webapps/ROOT*
+OB            
             echo "2. Verifying source WAR file exists..."
             if [ ! -f "/tmp/ROOT.war" ]; then
               echo "ERROR: /tmp/ROOT.war not found!"
               echo "Contents of /tmp:"
               ls -la /tmp/
-OBOBOB              exit 1
-OBOBOB            fi
+              exit 1
+            fi
             echo "WAR file details:"
-OB            ls -lh /tmp/ROOT.war
-            file /tmp/ROOT.war
+            ls -lh /tmp/ROOT.war
+OB            file /tmp/ROOT.war
             
-            echo "3. Copying WAR to webapps directory..."
-OB            sudo cp /tmp/ROOT.war /var/lib/tomcat10/webapps/
-            
-OB            echo "4. Setting permissions on WAR..."
-OB            sudo chown tomcat:tomcat /var/lib/tomcat10/webapps/ROOT.war
-OBOB            sudo chmod 644 /var/lib/tomcat10/webapps/ROOT.war
-            
-OB            echo "5. Waiting for Tomcat auto-deployment..."
-            sleep 30
+OBOBOB            echo "3. Copying WAR to webapps directory..."
+            sudo cp /tmp/ROOT.war /var/lib/tomcat10/webapps/
 OB            
+            echo "4. Setting permissions on WAR..."
+            sudo chown tomcat:tomcat /var/lib/tomcat10/webapps/ROOT.war
+            sudo chmod 644 /var/lib/tomcat10/webapps/ROOT.war
+OBOB            
+            echo "5. Waiting for Tomcat auto-deployment..."
+            sleep 30
+            
             echo "6. Verifying auto-deployment:"
 OB            ls -la /var/lib/tomcat10/webapps/
             if [ -d "/var/lib/tomcat10/webapps/ROOT" ]; then
-              echo "Exploded ROOT directory created successfully:"
+OB              echo "Exploded ROOT directory created successfully:"
               ls -la /var/lib/tomcat10/webapps/ROOT/
               sudo chown -R tomcat:tomcat /var/lib/tomcat10/webapps/ROOT/  # Fallback perm fix if needed
-            else
+OB            else
               echo "WARNING: ROOT directory not found yet - check Tomcat logs"
             fi
             sudo systemctl status tomcat10 --no-pager
             
             echo "=== Deployment Completed Successfully ==="
-
